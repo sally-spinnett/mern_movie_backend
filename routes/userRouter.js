@@ -2,6 +2,7 @@ const router = require("express").Router();
 const Account = require("../models/account");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
+// const fetch = require("node-fetch");
 
 // router.get("/test", (req, res) => {
 //    res.send("Hellos, it's working");
@@ -81,6 +82,30 @@ router.post("/tokenIsValid", async (req, res) => {
     } catch (err) {
         res.status(500).json({error: err.message});
     }
-})
+});
+
+// router.get("/movies", async (req, res) => {
+//     const url = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=113c7f5dffed89574dffaa2a18ff9ce0&page=1"
+//     const options = {
+//         method: "GET",
+//     };
+//     const response = await fetch(url, options);
+//     const data = await response.json();
+//     res.send({ data });
+//     console.log(data);
+// });
+
+router.get("/", auth, async (req, res) => {
+    const user = await Account.findById(req.user)
+    // const url = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=113c7f5dffed89574dffaa2a18ff9ce0&page=1"
+    // const options = {
+    //     method: "GET",
+    // };
+    // const response = await fetch(url, options);
+    // const data = await response.json();
+    res.json(user);
+    // res.send({user, data});
+    // console.log(data);
+});
 
 module.exports = router;
