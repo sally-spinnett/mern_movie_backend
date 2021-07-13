@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Account = require("../models/account");
+const Rating = require("../models/rating");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
 // const fetch = require("node-fetch");
@@ -84,28 +85,42 @@ router.post("/tokenIsValid", async (req, res) => {
     }
 });
 
-// router.get("/movies", async (req, res) => {
-//     const url = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=113c7f5dffed89574dffaa2a18ff9ce0&page=1"
-//     const options = {
-//         method: "GET",
-//     };
-//     const response = await fetch(url, options);
-//     const data = await response.json();
-//     res.send({ data });
-//     console.log(data);
-// });
+// for reviewing movie marks
+router.get('/:username', async (req, res) => {
+    console.log(req.params.username);
+    const filter = {username: req.params.username};
+
+    try {
+        const user = await Account.findOne(filter);
+        const marks = await Rating.find({email: user.email});
+        return res.json(marks);
+    } catch (err) {
+        res.status(500).json({error: err.message});
+    }
+});
+
+// for marking movies
+router.post('/mark', auth, async (req, res) => {
+    // const user = await Account.findById(req.user);
+    const {email, movieTitle, marks} = req.body;
+    console.log(req.body);
+    try {
+        const newRating = new Rating({
+            email,
+            movieTitle,
+            marks,
+        });
+        const savedRating = await newRating.save();
+        console.log(savedRating);
+        res.json(savedRating);
+    } catch (err) {
+        res.status(500).json({error: err.message});
+    }
+});
 
 router.get("/", auth, async (req, res) => {
-    const user = await Account.findById(req.user)
-    // const url = "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=113c7f5dffed89574dffaa2a18ff9ce0&page=1"
-    // const options = {
-    //     method: "GET",
-    // };
-    // const response = await fetch(url, options);
-    // const data = await response.json();
+    const user = await Account.findById(req.user);
     res.json(user);
-    // res.send({user, data});
-    // console.log(data);
 });
 
 module.exports = router;
