@@ -100,19 +100,34 @@ router.get('/:username', async (req, res) => {
 });
 
 // for marking movies
-router.post('/mark', auth, async (req, res) => {
+router.post('/mark', async (req, res) => {
     // const user = await Account.findById(req.user);
-    const {email, movieTitle, marks} = req.body;
+    // const {email, movieTitle, marks} = req.body;
+    const email = req.body.loginUserEmail;
+    const movieTitle = req.body.title;
+    const marks = req.body.mark;
     console.log(req.body);
     try {
+        console.log("hellooooo")
         const newRating = new Rating({
             email,
             movieTitle,
             marks,
         });
-        const savedRating = await newRating.save();
-        console.log(savedRating);
-        res.json(savedRating);
+        const filter = {email: email, movieTitle: movieTitle};
+        const existed = await Rating.findOne(filter);
+        console.log(existed);
+        if (existed) {
+            const updatedRating = await Rating.findOneAndUpdate(filter, {marks: newRating.marks});
+            updatedRating.save();
+            console.log(updatedRating);
+        } else {
+            const savedRating = await newRating.save();
+            console.log(savedRating);
+        }
+        // const savedRating = await newRating.save();
+        // console.log(savedRating);
+        // res.send(savedRating);
     } catch (err) {
         res.status(500).json({error: err.message});
     }
